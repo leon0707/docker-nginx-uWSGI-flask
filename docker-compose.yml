@@ -1,0 +1,9 @@
+version: "3.5"
+services:
+  uwsgi:
+    build: app/
+    restart: on-failure
+    volumes:
+      - /tmp:/tmp/
+    ports:
+      - 3000:3000
