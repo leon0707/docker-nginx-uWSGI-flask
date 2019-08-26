@@ -5,10 +5,14 @@ services:
       context: ./nginx
     ports:
       - 80:80
+    depends_on:
+      - uwsgi
     environment:
       - DOMAIN_NAME=localhost
       - UWSGI_PORT=3000
     command: /bin/bash -c "envsubst '$${DOMAIN_NAME},$${UWSGI_PORT}' < /etc/nginx/sites-enabled/uwsgi.conf > /etc/nginx/sites-enabled/uwsgi.conf && exec nginx -g 'daemon off;'"
+    volumes:
+      - /tmp/log/nginx/:/var/log/nginx/
   uwsgi:
     build:
       context: ./app
