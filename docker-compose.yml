@@ -6,14 +6,14 @@ services:
     ports:
       - 80:80
     depends_on:
-      - uwsgi
+      - main
     environment:
       - DOMAIN_NAME=localhost
       - UWSGI_PORT=3000
-    command: /bin/bash -c "envsubst '$${DOMAIN_NAME},$${UWSGI_PORT}' < /etc/nginx/sites-enabled/uwsgi.conf > /etc/nginx/sites-enabled/uwsgi.conf && exec nginx -g 'daemon off;'"
+    command: /bin/bash -c "envsubst '$${DOMAIN_NAME},$${UWSGI_PORT}' < /etc/nginx/sites-enabled/main.conf > /etc/nginx/sites-enabled/main.conf && exec nginx -g 'daemon off;'"
     volumes:
-      - /tmp/log/nginx/:/var/log/nginx/
-  uwsgi:
+      - ./log/nginx/:/var/log/nginx/
+  main:
     build:
       context: ./app
     restart: on-failure
@@ -21,3 +21,33 @@ services:
       - '3000'
     environment:
       - SOCKET=0.0.0.0:3000
+  rabbitmq:
+    image: rabbitmq:3.7.17-management-alpine
+    hostname: 'test_rabbitmq'
+    volumes:
+      - ./rabbitmq:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbitmq_user
+      - RABBITMQ_DEFAULT_PASS=password
+      - RABBITMQ_DEFAULT_VHOST=my_vhost
+    ports:
+      - 8080:15672
+  email_service_producer:
+    build:
+      context: ./email_service_producer
+    depends_on:
+      - rabbitmq
+    expose:
+      - '80'
+    environment:
+      - HTTP=0.0.0.0:80
+  email_service_consumer:
+    build:
+      context: ./email_service_consumer
+    environment:
+      - SMTP_SERVER=smtp.gmail.com
+      - SMTP_PORT=587
+      - SENDER_EMAIL=xxxx@gmail.com
+      - SENDER_PASSWORD=xxxx
+    depends_on:
+      - rabbitmq

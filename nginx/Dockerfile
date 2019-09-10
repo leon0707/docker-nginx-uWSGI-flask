@@ -1,4 +1,4 @@
 FROM nginx:stable
 
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY uwsgi.conf /etc/nginx/sites-enabled/uwsgi.conf
+COPY main.conf /etc/nginx/sites-enabled/main.conf
